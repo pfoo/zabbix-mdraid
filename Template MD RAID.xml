@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
     <version>4.0</version>
-    <date>2019-01-15T23:46:03Z</date>
+    <date>2019-01-16T08:56:24Z</date>
     <groups>
         <group>
             <name>Templates</name>
@@ -468,7 +468,7 @@ repair: A full check and repair is happening. This is similar to resync, but was
                             <expression>{Template MD RAID:mdraid.sync_status[{#MDNAME}].str(resync)}=1</expression>
                             <recovery_mode>0</recovery_mode>
                             <recovery_expression/>
-                            <name>MD Raid array {#MDNAME} is rsyncing on {HOST.NAME}</name>
+                            <name>MD Raid array {#MDNAME} is syncing on {HOST.NAME}</name>
                             <correlation_mode>0</correlation_mode>
                             <correlation_tag/>
                             <url/>
