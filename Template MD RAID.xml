@@ -67,7 +67,7 @@
                                     <expression>last(/Template MD RAID/mdraid[{#MD_DEVICE},e,&quot;Failed Devices&quot;])&gt;0</expression>
                                     <name>{#MD_DEVICE} Number of Failed Devices</name>
                                     <priority>AVERAGE</priority>
-                                    <description>There is a failed disk for a RAID array on this host.  Please investigate using https://wiki.noc.sonic.net/display/SD/RAID+array+failure#RAIDarrayfailure-Zabbix%22NumberofFailedDevices%22</description>
+                                    <description>There is a failed disk for a RAID array on this host.</description>
                                 </trigger_prototype>
                             </trigger_prototypes>
                         </item_prototype>
