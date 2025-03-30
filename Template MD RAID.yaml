@@ -1,0 +1,207 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: 846977d1dfed4968bc5f8bdb363285bc
+      name: 'Templates/Operating systems'
+  templates:
+    - uuid: 208aa70635844c64892975c392bc8428
+      template: 'MD RAID'
+      name: 'MD RAID'
+      description: 'Template for monitoring of Linux MD RAID (mdadm).'
+      vendor:
+        name: pfoo
+        version: 7.0.3
+      groups:
+        - name: 'Templates/Operating systems'
+      discovery_rules:
+        - uuid: 2e14934d330d40c491670298a8804bad
+          name: 'MD Raid discovery'
+          key: mdraid.discovery
+          delay: 1h
+          lifetime: 30d
+          enabled_lifetime_type: DISABLE_NEVER
+          description: 'Discover every Linux MD Raid'
+          item_prototypes:
+            - uuid: 00f8b763c6844076ba4aa643b3d1230b
+              name: 'MD Raid {#MDNAME} degraded disks'
+              key: 'mdraid.degraded[{#MDNAME}]'
+              delay: 300s
+              history: 90d
+              trends: '0'
+              description: 'Number of degraded disks in the array {#MDNAME}.'
+              tags:
+                - tag: component
+                  value: storage
+                - tag: mdarray
+                  value: '{#MDNAME}'
+              trigger_prototypes:
+                - uuid: 4fc495a2435d4f5bb337bb0958bfe6c5
+                  expression: 'last(/MD RAID/mdraid.degraded[{#MDNAME}])>0'
+                  name: 'MD Raid array {#MDNAME} is degraded on {HOST.NAME}'
+                  opdata: '{ITEM.VALUE} degraded disk'
+                  priority: HIGH
+                  description: 'One or more failing disk in array.'
+                  tags:
+                    - tag: mdarray
+                      value: '{#MDNAME}'
+                    - tag: scope
+                      value: failure
+            - uuid: feb853f2c65c4eb6a25ea9dc9d289174
+              name: 'MD Raid {#MDNAME} array size'
+              key: 'mdraid.disks[{#MDNAME}]'
+              delay: 1h
+              history: 90d
+              trends: '0'
+              units: disks
+              description: 'Number of disks configured in the array {#MDNAME}.'
+              tags:
+                - tag: component
+                  value: storage
+                - tag: mdarray
+                  value: '{#MDNAME}'
+              trigger_prototypes:
+                - uuid: 6b86ee6fa06045848146b287ee279fa0
+                  expression: '(last(/MD RAID/mdraid.disks[{#MDNAME}],#1)<>last(/MD RAID/mdraid.disks[{#MDNAME}],#2))<>0'
+                  name: 'Number of disks in MD Raid array {#MDNAME} changed on {HOST.NAME}'
+                  priority: WARNING
+                  description: 'A disk was either removed or added.'
+                  tags:
+                    - tag: mdarray
+                      value: '{#MDNAME}'
+                    - tag: scope
+                      value: notice
+            - uuid: 156f0a719aa049b591c12095df6e5eb9
+              name: 'MD Raid {#MDNAME} array level'
+              key: 'mdraid.level[{#MDNAME}]'
+              delay: 1h
+              history: 90d
+              value_type: CHAR
+              trends: '0'
+              description: 'Raid level for {#MDNAME} array.'
+              tags:
+                - tag: component
+                  value: storage
+                - tag: mdarray
+                  value: '{#MDNAME}'
+            - uuid: ed7ddbcee07345e882565e339e83a846
+              name: 'MD Raid {#MDNAME} state'
+              key: 'mdraid.state[{#MDNAME}]'
+              delay: 300s
+              history: 90d
+              value_type: CHAR
+              trends: '0'
+              tags:
+                - tag: component
+                  value: storage
+                - tag: mdarray
+                  value: '{#MDNAME}'
+            - uuid: 18394549496948539720e33ae4fa1a71
+              name: 'MD Raid {#MDNAME} sync speed'
+              key: 'mdraid.sync_speed[{#MDNAME}]'
+              delay: 60s
+              history: 90d
+              trends: '0'
+              units: B/s
+              description: 'MD Raid {#MDNAME} sync speed in bytes/sec'
+              tags:
+                - tag: component
+                  value: storage
+                - tag: mdarray
+                  value: '{#MDNAME}'
+            - uuid: a41a38f383f644dc8f0fe346df477ae0
+              name: 'MD Raid {#MDNAME} sync status'
+              key: 'mdraid.sync_status[{#MDNAME}]'
+              delay: 60s
+              history: 90d
+              value_type: CHAR
+              trends: '0'
+              description: |
+                MD Raid {#MDNAME} sync status :
+                resync: redundancy is being recalculated after unclean shutdown or creation
+                recover: a hot spare is being built to replace a failed/missing device
+                idle: nothing is happening
+                check: A full check of redundancy was requested and is happening. This reads all blocks and checks them. A repair may also happen for some raid levels.
+                repair: A full check and repair is happening. This is similar to resync, but was requested by the user, and the write-intent bitmap is NOT used to optimise the process.
+              tags:
+                - tag: component
+                  value: storage
+                - tag: mdarray
+                  value: '{#MDNAME}'
+              trigger_prototypes:
+                - uuid: 54a71f844abb433f9605f012c43c3592
+                  expression: 'find(/MD RAID/mdraid.sync_status[{#MDNAME}],,"like","recover")=1'
+                  name: 'MD Raid array {#MDNAME} is in recovery mode on {HOST.NAME}'
+                  priority: INFO
+                  description: 'This means a hot spare is being built to replace a failed/missing device.'
+                  tags:
+                    - tag: mdarray
+                      value: '{#MDNAME}'
+                    - tag: scope
+                      value: performance
+                - uuid: e6bfb530addb4c0db272a1031888138a
+                  expression: 'find(/MD RAID/mdraid.sync_status[{#MDNAME}],,"like","resync")=1'
+                  name: 'MD Raid array {#MDNAME} is syncing on {HOST.NAME}'
+                  priority: INFO
+                  description: 'This means redundancy is being recalculated after unclean shutdown.'
+                  tags:
+                    - tag: mdarray
+                      value: '{#MDNAME}'
+                    - tag: scope
+                      value: performance
+          graph_prototypes:
+            - uuid: f3934446edc944c4a3292dbe589cc2bd
+              name: 'MD Raid {#MDNAME} degraded disks'
+              graph_items:
+                - color: 1A7C11
+                  item:
+                    host: 'MD RAID'
+                    key: 'mdraid.degraded[{#MDNAME}]'
+            - uuid: 7b939f8d1120494980353a467965939c
+              name: 'MD Raid {#MDNAME} sync speed'
+              graph_items:
+                - sortorder: '1'
+                  color: 1A7C11
+                  item:
+                    host: 'MD RAID'
+                    key: 'mdraid.sync_speed[{#MDNAME}]'
+      tags:
+        - tag: class
+          value: os
+        - tag: target
+          value: linux
+      dashboards:
+        - uuid: 82cd634bac1f495d92dae860b332ad97
+          name: 'MD Raid'
+          pages:
+            - widgets:
+                - type: graphprototype
+                  width: '72'
+                  height: '5'
+                  fields:
+                    - type: INTEGER
+                      name: columns
+                      value: '1'
+                    - type: GRAPH_PROTOTYPE
+                      name: graphid
+                      value:
+                        host: 'MD RAID'
+                        name: 'MD Raid {#MDNAME} sync speed'
+                    - type: STRING
+                      name: reference
+                      value: AAAAL
+                - type: graphprototype
+                  'y': '5'
+                  width: '72'
+                  height: '5'
+                  fields:
+                    - type: INTEGER
+                      name: columns
+                      value: '1'
+                    - type: GRAPH_PROTOTYPE
+                      name: graphid
+                      value:
+                        host: 'MD RAID'
+                        name: 'MD Raid {#MDNAME} degraded disks'
+                    - type: STRING
+                      name: reference
+                      value: AAAAM
